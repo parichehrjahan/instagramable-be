@@ -4,8 +4,34 @@
   "description": "Instagramable app backend",
   "main": "index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "test": "jest",
+    "dev": "nodemon src/index.js",
+    "start": "node src/index.js",
+    "format": "prettier --write .",
+    "prepare": "npx simple-git-hooks"
   },
-  "author": "",
-  "license": "ISC"
+  "simple-git-hooks": {
+    "pre-commit": "npx lint-staged"
+  },
+  "lint-staged": {
+    "*.{js,jsx,json,css,md}": [
+      "prettier --write"
+    ]
+  },
+  "author": "Parichehr Noveiri Jahan",
+  "license": "ISC",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.47.10",
+    "cors": "^2.8.5",
+    "dotenv": "^16.4.7",
+    "express": "^4.21.2",
+    "morgan": "^1.10.0",
+    "nodemon": "^3.1.9",
+    "winston": "^3.17.0"
+  },
+  "devDependencies": {
+    "lint-staged": "^15.2.11",
+    "simple-git-hooks": "^2.11.1",
+    "prettier": "^3.4.2"
+  }
 }
