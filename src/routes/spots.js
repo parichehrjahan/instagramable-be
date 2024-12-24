@@ -3,13 +3,22 @@
 const express = require("express");
 const router = express.Router();
 
-const { getSpots } = require("../controllers/spotsController");
+const {
+  getSpots,
+  getSpotById,
+  createSpot,
+  updateSpot,
+  deleteSpot,
+} = require("../controllers/spotsController");
 
 router.get("/", getSpots);
 
-router.post("/", (req, res) => {
-  const { name } = req.body;
-  return res.json({ success: true, message: `Created spot ${name}` });
-});
+router.get("/:id", getSpotById);
+
+router.post("/", createSpot);
+
+router.put("/:id", updateSpot);
+
+router.delete("/:id", deleteSpot);
 
 module.exports = router;
