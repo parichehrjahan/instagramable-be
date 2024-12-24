@@ -1,4 +1,5 @@
 const logger = require("../utils/logger");
+const supabase = require("../config/supabaseClient");
 
 exports.getSpots = async (req, res) => {
   try {
