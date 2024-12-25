@@ -3,7 +3,10 @@ const supabase = require("../config/supabaseClient");
 
 exports.getSpots = async (req, res) => {
   try {
-    const { data, error } = await supabase.from("spots").select("*");
+    const { data, error } = await supabase
+      .from("spots")
+      .select("*")
+      .order("created_at", { ascending: false });
 
     if (error) throw error;
 
@@ -39,11 +42,18 @@ exports.getSpotById = async (req, res) => {
 // Create a new spot
 exports.createSpot = async (req, res) => {
   try {
-    const { name, address, description } = req.body;
+    const { name, address, description, image_urls } = req.body;
 
     const { data, error } = await supabase
       .from("spots")
-      .insert([{ name, address, description }])
+      .insert([
+        {
+          name,
+          address,
+          description,
+          image_urls,
+        },
+      ])
       .select();
 
     if (error) throw error;
