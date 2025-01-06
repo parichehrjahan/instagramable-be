@@ -5,14 +5,12 @@ const { authenticateUser } = require("../middlewares/auth");
 const {
   toggleStoredSpot,
   getStoredSpotStatus,
-  getSpotLikeCounts,
+  getUserStoredSpots,
 } = require("../controllers/storedSpotsController");
 
 // Protected routes - require authentication
 router.post("/", authenticateUser, toggleStoredSpot);
 router.get("/:spotId/status", authenticateUser, getStoredSpotStatus);
-
-// Public route - anyone can see like counts
-router.get("/:spotId/counts", getSpotLikeCounts);
+router.get("/user", authenticateUser, getUserStoredSpots);
 
 module.exports = router;
