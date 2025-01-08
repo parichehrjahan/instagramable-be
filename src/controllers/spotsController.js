@@ -42,7 +42,7 @@ exports.getSpotById = async (req, res) => {
 // Create a new spot
 exports.createSpot = async (req, res) => {
   try {
-    const { name, address, description, image_urls } = req.body;
+    const { name, address, description } = req.body;
 
     const { data, error } = await supabase
       .from("spots")
@@ -51,7 +51,6 @@ exports.createSpot = async (req, res) => {
           name,
           address,
           description,
-          image_urls,
         },
       ])
       .select();
@@ -101,6 +100,27 @@ exports.deleteSpot = async (req, res) => {
     return res.json({ success: true, message: "Spot deleted successfully" });
   } catch (error) {
     logger.error(`Error deleting spot: ${error.message}`);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.getSpotImages = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { data, error } = await supabase
+      .from("spot_images")
+      .select("image_url")
+      .eq("spot_id", id)
+      .limit(3);
+
+    if (error) throw error;
+
+    return res.json({
+      success: true,
+      data: data.map((img) => img.image_url),
+    });
+  } catch (error) {
+    logger.error(`Error getting spot images: ${error.message}`);
     return res.status(500).json({ success: false, error: error.message });
   }
 };

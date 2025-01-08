@@ -9,6 +9,7 @@ const {
   createSpot,
   updateSpot,
   deleteSpot,
+  getSpotImages,
 } = require("../controllers/spotsController");
 
 router.get("/", getSpots);
@@ -20,5 +21,7 @@ router.post("/", createSpot);
 router.put("/:id", updateSpot);
 
 router.delete("/:id", deleteSpot);
+
+router.get("/:id/images", getSpotImages);
 
 module.exports = router;
