@@ -2,6 +2,7 @@
 
 const express = require("express");
 const router = express.Router();
+const { authenticateUser } = require("../middlewares/auth");
 
 const {
   getSpots,
@@ -12,16 +13,16 @@ const {
   getSpotImages,
 } = require("../controllers/spotsController");
 
-router.get("/", getSpots);
+router.get("/", authenticateUser, getSpots);
 
-router.get("/:id", getSpotById);
+router.get("/:id", authenticateUser, getSpotById);
 
-router.post("/", createSpot);
+router.post("/", authenticateUser, createSpot);
 
-router.put("/:id", updateSpot);
+router.put("/:id", authenticateUser, updateSpot);
 
-router.delete("/:id", deleteSpot);
+router.delete("/:id", authenticateUser, deleteSpot);
 
-router.get("/:id/images", getSpotImages);
+router.get("/:id/images", authenticateUser, getSpotImages);
 
 module.exports = router;

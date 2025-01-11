@@ -5,7 +5,16 @@ exports.getSpots = async (req, res) => {
   try {
     const { data, error } = await supabase
       .from("spots")
-      .select("*")
+      .select(
+        `
+        *,
+        spot_images (
+          id,
+          image_url,
+          caption
+        )
+      `,
+      )
       .order("created_at", { ascending: false });
 
     if (error) throw error;
@@ -23,7 +32,16 @@ exports.getSpotById = async (req, res) => {
     const { id } = req.params;
     const { data, error } = await supabase
       .from("spots")
-      .select("*")
+      .select(
+        `
+        *,
+        spot_images (
+          id,
+          image_url,
+          caption
+        )
+      `,
+      )
       .eq("id", id)
       .single();
 
@@ -42,22 +60,56 @@ exports.getSpotById = async (req, res) => {
 // Create a new spot
 exports.createSpot = async (req, res) => {
   try {
-    const { name, address, description } = req.body;
+    const { name, description, location, images } = req.body;
+    const userId = req.user.id; // Assuming you have auth middleware
 
-    const { data, error } = await supabase
+    // First create the spot
+    const { data: spot, error: spotError } = await supabase
       .from("spots")
       .insert([
         {
           name,
-          address,
           description,
+          location,
         },
       ])
-      .select();
+      .select()
+      .single();
 
-    if (error) throw error;
+    if (spotError) throw spotError;
 
-    return res.status(201).json({ success: true, data: data[0] });
+    // If we have images, create the spot_images records
+    if (images && images.length > 0) {
+      const { error: imagesError } = await supabase.from("spot_images").insert(
+        images.map((img) => ({
+          spot_id: spot.id,
+          image_url: img.image_url,
+          caption: img.caption || null,
+        })),
+      );
+
+      if (imagesError) throw imagesError;
+    }
+
+    // Fetch the complete spot with its images
+    const { data: completeSpot, error: fetchError } = await supabase
+      .from("spots")
+      .select(
+        `
+        *,
+        spot_images (
+          id,
+          image_url,
+          caption
+        )
+      `,
+      )
+      .eq("id", spot.id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    return res.status(201).json({ success: true, data: completeSpot });
   } catch (error) {
     logger.error(`Error creating spot: ${error.message}`);
     return res.status(500).json({ success: false, error: error.message });
