@@ -12,6 +12,9 @@ exports.getSpots = async (req, res) => {
           id,
           image_url,
           caption
+        ),
+        spot_categories (
+          category_id
         )
       `,
       )
