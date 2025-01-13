@@ -85,7 +85,7 @@ exports.createReview = async (req, res) => {
           spot_id,
           rating,
           content,
-          // user_id is null for guest reviews
+          user_id: req.user?.id, // Add user_id if authenticated
         },
       ])
       .select()
@@ -107,6 +107,25 @@ exports.createReview = async (req, res) => {
 
       if (imageError) throw imageError;
     }
+
+    // Calculate new average rating
+    const { data: reviews, error: reviewsError } = await supabase
+      .from("reviews")
+      .select("rating")
+      .eq("spot_id", spot_id);
+
+    if (reviewsError) throw reviewsError;
+
+    const avgRating =
+      reviews.reduce((sum, r) => sum + r.rating, 0) / reviews.length;
+
+    // Update spot's average rating
+    const { error: updateError } = await supabase
+      .from("spots")
+      .update({ average_rating: avgRating })
+      .eq("id", spot_id);
+
+    if (updateError) throw updateError;
 
     // Fetch the complete review with images
     const { data: completeReview, error: fetchError } = await supabase
