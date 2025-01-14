@@ -141,6 +141,8 @@ exports.createReview = async (req, res) => {
 
     if (fetchError) throw fetchError;
 
+    await updateSpotStats(spot_id);
+
     return res.status(201).json({ success: true, data: completeReview });
   } catch (error) {
     logger.error(`Error creating review: ${error.message}`);
@@ -176,6 +178,8 @@ exports.updateReview = async (req, res) => {
         .json({ success: false, error: "Review not found" });
     }
 
+    await updateSpotStats(data.spot_id);
+
     return res.json({ success: true, data });
   } catch (error) {
     logger.error(`Error updating review: ${error.message}`);
@@ -192,9 +196,47 @@ exports.deleteReview = async (req, res) => {
 
     if (error) throw error;
 
+    await updateSpotStats(data.spot_id);
+
     return res.json({ success: true, message: "Review deleted successfully" });
   } catch (error) {
     logger.error(`Error deleting review: ${error.message}`);
     return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+const updateSpotStats = async (spotId) => {
+  try {
+    // Get all reviews for the spot
+    const { data: reviews, error: reviewsError } = await supabase
+      .from("reviews")
+      .select("rating")
+      .eq("spot_id", spotId);
+
+    if (reviewsError) throw reviewsError;
+
+    const reviewCount = reviews.length;
+    const averageRating =
+      reviewCount > 0
+        ? Number(
+            (
+              reviews.reduce((sum, r) => sum + r.rating, 0) / reviewCount
+            ).toFixed(1),
+          )
+        : null;
+
+    // Update spot stats
+    const { error: updateError } = await supabase
+      .from("spots")
+      .update({
+        review_count: reviewCount,
+        average_rating: averageRating,
+      })
+      .eq("id", spotId);
+
+    if (updateError) throw updateError;
+  } catch (error) {
+    logger.error(`Error updating spot stats: ${error.message}`);
+    throw error;
   }
 };

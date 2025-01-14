@@ -3,26 +3,40 @@ const supabase = require("../config/supabaseClient");
 
 exports.getSpots = async (req, res) => {
   try {
-    const { data, error } = await supabase
-      .from("spots")
-      .select(
-        `
+    // First, get all spots with their basic info and images
+    const { data: spots, error } = await supabase.from("spots").select(`
         *,
-        spot_images (
-          id,
-          image_url,
-          caption
-        ),
-        spot_categories (
-          category_id
+        spot_images (*),
+        reviews (
+          rating
         )
-      `,
-      )
-      .order("created_at", { ascending: false });
+      `);
 
     if (error) throw error;
 
-    return res.json({ success: true, data });
+    // Calculate stats for each spot
+    const spotsWithStats = spots.map((spot) => {
+      const reviews = spot.reviews || [];
+      const reviewCount = reviews.length;
+      const averageRating =
+        reviewCount > 0
+          ? Number(
+              (
+                reviews.reduce((sum, review) => sum + (review.rating || 0), 0) /
+                reviewCount
+              ).toFixed(1),
+            )
+          : null;
+
+      return {
+        ...spot,
+        review_count: reviewCount,
+        average_rating: averageRating,
+        reviews: undefined, // Optional: remove reviews array from response if not needed
+      };
+    });
+
+    return res.json({ success: true, data: spotsWithStats });
   } catch (error) {
     logger.error(`Error getting spots: ${error.message}`);
     return res.status(500).json({ success: false, error: error.message });
