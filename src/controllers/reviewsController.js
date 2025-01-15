@@ -205,6 +205,76 @@ exports.deleteReview = async (req, res) => {
   }
 };
 
+exports.toggleLike = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    // Get current review
+    const { data: review, error: fetchError } = await supabase
+      .from("reviews")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Update like count
+    const { data, error } = await supabase
+      .from("reviews")
+      .update({
+        like_count: review.like_count + 1,
+        dislike_count: Math.max(0, review.dislike_count - 1), // Reset dislike if exists
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return res.json({ success: true, data });
+  } catch (error) {
+    logger.error(`Error toggling review like: ${error.message}`);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
+exports.toggleDislike = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    // Get current review
+    const { data: review, error: fetchError } = await supabase
+      .from("reviews")
+      .select("*")
+      .eq("id", id)
+      .single();
+
+    if (fetchError) throw fetchError;
+
+    // Update dislike count
+    const { data, error } = await supabase
+      .from("reviews")
+      .update({
+        dislike_count: review.dislike_count + 1,
+        like_count: Math.max(0, review.like_count - 1), // Reset like if exists
+        updated_at: new Date().toISOString(),
+      })
+      .eq("id", id)
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return res.json({ success: true, data });
+  } catch (error) {
+    logger.error(`Error toggling review dislike: ${error.message}`);
+    return res.status(500).json({ success: false, error: error.message });
+  }
+};
+
 const updateSpotStats = async (spotId) => {
   try {
     // Get all reviews for the spot
@@ -238,5 +308,27 @@ const updateSpotStats = async (spotId) => {
   } catch (error) {
     logger.error(`Error updating spot stats: ${error.message}`);
     throw error;
+  }
+};
+
+exports.checkUserInteraction = async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user?.id;
+
+    // Check if user has already liked or disliked this review
+    const { data: existingInteraction, error: existingError } = await supabase
+      .from("review_interactions")
+      .select("*")
+      .eq("review_id", id)
+      .eq("user_id", userId)
+      .single();
+
+    if (existingError) throw existingError;
+
+    return res.json({ success: true, interaction: existingInteraction });
+  } catch (error) {
+    logger.error(`Error checking user interaction: ${error.message}`);
+    return res.status(500).json({ success: false, error: error.message });
   }
 };
