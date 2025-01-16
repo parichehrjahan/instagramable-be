@@ -56,18 +56,34 @@ exports.getSpotById = async (req, res) => {
           id,
           image_url,
           caption
+        ),
+        reviews (
+          *
         )
       `,
       )
       .eq("id", id)
+      .order("updated_at", { foreignTable: "reviews", ascending: false })
       .single();
+
+    const { data: userReviewInteraction, error: userReviewInteractionError } =
+      await supabase
+        .from("review_interactions")
+        .select("*")
+        .eq("spot_id", id)
+        .eq("user_id", req.user.id);
 
     if (error) throw error;
     if (!data) {
       return res.status(404).json({ success: false, error: "Spot not found" });
     }
 
-    return res.json({ success: true, data });
+    const compiledData = {
+      ...data,
+      user_review_interaction: userReviewInteraction,
+    };
+
+    return res.json({ success: true, data: compiledData });
   } catch (error) {
     logger.error(`Error getting spot: ${error.message}`);
     return res.status(500).json({ success: false, error: error.message });
