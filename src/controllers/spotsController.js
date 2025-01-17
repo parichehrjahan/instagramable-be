@@ -93,7 +93,15 @@ exports.getSpotById = async (req, res) => {
 // Create a new spot
 exports.createSpot = async (req, res) => {
   try {
-    const { name, description, location, images } = req.body;
+    const {
+      name,
+      description,
+      location,
+      latitude,
+      longitude,
+      imageURLs,
+      categories,
+    } = req.body;
     const userId = req.user.id; // Assuming you have auth middleware
 
     // First create the spot
@@ -104,6 +112,8 @@ exports.createSpot = async (req, res) => {
           name,
           description,
           location,
+          latitude,
+          longitude,
         },
       ])
       .select()
@@ -112,37 +122,33 @@ exports.createSpot = async (req, res) => {
     if (spotError) throw spotError;
 
     // If we have images, create the spot_images records
-    if (images && images.length > 0) {
+    if (imageURLs && imageURLs.length > 0) {
       const { error: imagesError } = await supabase.from("spot_images").insert(
-        images.map((img) => ({
+        imageURLs.map((url) => ({
           spot_id: spot.id,
-          image_url: img.image_url,
-          caption: img.caption || null,
+          image_url: url,
+          caption: null,
         })),
       );
 
       if (imagesError) throw imagesError;
     }
 
-    // Fetch the complete spot with its images
-    const { data: completeSpot, error: fetchError } = await supabase
-      .from("spots")
-      .select(
-        `
-        *,
-        spot_images (
-          id,
-          image_url,
-          caption
-        )
-      `,
-      )
-      .eq("id", spot.id)
-      .single();
+    // Insert category relationships
+    if (categories?.length > 0) {
+      const categoryRelations = categories.map((categoryId) => ({
+        spot_id: spot.id,
+        category_id: categoryId,
+      }));
 
-    if (fetchError) throw fetchError;
+      const { error: categoryError } = await supabase
+        .from("spot_categories")
+        .insert(categoryRelations);
 
-    return res.status(201).json({ success: true, data: completeSpot });
+      if (categoryError) throw categoryError;
+    }
+
+    return res.status(201).json({ success: true, data: spot.id });
   } catch (error) {
     logger.error(`Error creating spot: ${error.message}`);
     return res.status(500).json({ success: false, error: error.message });
