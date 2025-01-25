@@ -55,7 +55,8 @@ exports.getSpotById = async (req, res) => {
         spot_images (
           id,
           image_url,
-          caption
+          caption,
+          is_gallery
         ),
         reviews (
           *
