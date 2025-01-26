@@ -9,6 +9,9 @@ exports.getSpots = async (req, res) => {
         spot_images (*),
         reviews (
           rating
+        ),
+        spot_categories (
+          category_id
         )
       `);
 
@@ -32,7 +35,9 @@ exports.getSpots = async (req, res) => {
         ...spot,
         review_count: reviewCount,
         average_rating: averageRating,
+        categories: spot.spot_categories.map((sc) => sc.category_id),
         reviews: undefined, // Optional: remove reviews array from response if not needed
+        spot_categories: undefined, // Remove the join table data
       };
     });
 
