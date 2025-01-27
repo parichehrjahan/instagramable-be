@@ -110,3 +110,9 @@ SUPABASE_SERVICE_KEY=
 PORT=3003
 
 Make sure not to commit your actual .env file to version control.
+
+---
+
+## Supabase Integration
+
+We use Supabase for authentication and database management.
