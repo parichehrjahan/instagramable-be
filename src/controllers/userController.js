@@ -1,4 +1,4 @@
-const supabase = require("../lib/supabaseClient");
+const supabase = require("../config/supabaseClient");
 
 exports.getUser = async (req, res) => {
   try {
@@ -36,26 +36,62 @@ exports.getUserProfile = async (req, res) => {
 
 exports.updateUserProfile = async (req, res) => {
   try {
-    const { username, full_name, bio } = req.body;
+    const { username, bio } = req.body;
+    console.log("Received update request:", { username, bio });
+    console.log("User ID:", req.user.id);
+
+    // First check if username is already taken (if username changed)
+    if (username) {
+      const { data: existingUser, error: checkError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("username", username)
+        .neq("id", req.user.id)
+        .single();
+
+      console.log("Username check result:", { existingUser, checkError });
+
+      if (existingUser) {
+        return res.status(400).json({
+          success: false,
+          error: "Username is already taken",
+        });
+      }
+    }
+
+    // Update the user profile
+    const updateData = {
+      username,
+      bio,
+      updated_at: new Date().toISOString(),
+    };
+    console.log("Updating with data:", updateData);
 
     const { data, error } = await supabase
       .from("users")
-      .update({
-        username,
-        full_name,
-        bio,
-        updated_at: new Date().toISOString(),
-      })
+      .update(updateData)
       .eq("id", req.user.id)
       .select()
       .single();
 
+    console.log("Update result:", { data, error });
+
     if (error) throw error;
 
-    return res.json({ success: true, data });
+    return res.json({
+      success: true,
+      data: {
+        username: data.username,
+        bio: data.bio,
+        profile_picture: data.profile_picture,
+      },
+    });
   } catch (error) {
     console.error("Error updating user profile:", error);
-    return res.status(500).json({ success: false, error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: error.message,
+    });
   }
 };
 
