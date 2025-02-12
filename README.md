@@ -116,3 +116,5 @@ Make sure not to commit your actual .env file to version control.
 ## Supabase Integration
 
 We use Supabase for authentication and database management.
+
+TODO: add script for generating spots automatically with llms + apify ig scraper
