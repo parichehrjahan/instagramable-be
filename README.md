@@ -117,6 +117,6 @@ Make sure not to commit your actual .env file to version control.
 
 We use Supabase for authentication and database management.
 
-TODO: add script for generating spots automatically with llms + apify ig scraper
-
 will be hosting the backend on railway.app
+
+TODO: add script for generating spots automatically with llms + apify ig scraper
