@@ -148,3 +148,27 @@ will be hosting the backend on railway.app
 TODO: add script for generating spots automatically with llms + apify ig scraper
 
 TODO: add script for generating spots automatically with llms + apify ig scraper
+
+will be hosting the backend on railway.app
+
+TODO: add script for generating spots automatically with llms + apify ig scraper
+
+TODO: add script for generating spots automatically with llms + apify ig scraper
+
+## Supabase Integration
+
+We use Supabase for authentication and database management.
+
+will be hosting the backend on railway.app
+
+TODO: add script for generating spots automatically with llms + apify ig scraper
+
+## Supabase Integration
+
+We use Supabase for authentication and database management.
+
+will be hosting the backend on railway.app
+
+TODO: add script for generating spots automatically with llms + apify ig scraper
+
+TODO: add script for generating spots automatically with llms + apify ig scraper
