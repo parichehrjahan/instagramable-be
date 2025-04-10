@@ -218,3 +218,5 @@ will be hosting the backend on railway.app
 TODO: add script for generating spots automatically with llms + apify ig scraper
 
 TODO: add script for generating spots automatically with llms + apify ig scraper
+
+aaaaa
